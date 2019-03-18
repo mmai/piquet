@@ -66,14 +66,19 @@ impl Card {
     }
 }
 
-
+#[derive (Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Hand {
     cards: Vec<Card>,
 }
 
 impl fmt::Display for Hand {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self.cards)
+        // write!(f, "{:?}", self.cards)
+        for (count, c) in self.cards.iter().enumerate() {
+            if count != 0 { write!(f, " "); }
+            write!(f, "{}", c);
+        }
+        write!(f, " ")
     }
 }
 

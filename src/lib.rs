@@ -1,4 +1,5 @@
-pub mod cards;
+mod cards;
+mod combinations;
 
 pub fn display() {
     println!("PIQUET");
