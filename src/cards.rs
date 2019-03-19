@@ -1,8 +1,9 @@
 use std::fmt;
 use std::cmp::Ordering;
+use std::slice::Iter;
 use serde::{Serialize, Deserialize};
 
-#[derive (Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive (Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum Suit {
     Heart,
     Diamond,
@@ -21,7 +22,7 @@ impl fmt::Display for Suit {
     }
 }
 
-#[derive (Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive (Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum Rank {
     Seven,
     Eight,
@@ -31,6 +32,31 @@ pub enum Rank {
     Queen,
     King,
     Ace
+}
+
+impl Rank {
+    pub fn point_value(&self) -> u32 {
+       match self {
+           Rank::Seven => 7,
+           Rank::Eight => 8,
+           Rank::Nine => 9,
+           Rank::Ace => 11,
+           _ => 10,
+       }
+    }
+
+    pub fn succ(&self) -> Option<Self> {
+        match self {
+            Rank::Seven => Some(Rank::Eight),
+            Rank::Eight => Some(Rank::Nine),
+            Rank::Nine => Some(Rank::Ten),
+            Rank::Ten => Some(Rank::Jack),
+            Rank::Jack => Some(Rank::Queen),
+            Rank::Queen => Some(Rank::King),
+            Rank::King => Some(Rank::Ace),
+            Rank::Ace => None
+        }
+    }
 }
 
 impl fmt::Display for Rank {
@@ -48,10 +74,10 @@ impl fmt::Display for Rank {
     }
 }
 
-#[derive (Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive (Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct Card { 
-    rank: Rank,
-    suit: Suit
+    pub rank: Rank,
+    pub suit: Suit
     }
 
 impl fmt::Display for Card {
@@ -64,17 +90,18 @@ impl Card {
     pub fn new(rank:Rank, suit:Suit) -> Self {
         Card { rank, suit }
     }
+    pub fn point_value(&self) -> u32 {
+        self.rank.point_value()
+    }
 }
 
-#[derive (Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Hand {
-    cards: Vec<Card>,
-}
+#[derive (Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Hand(Vec<Card>);
 
 impl fmt::Display for Hand {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        // write!(f, "{:?}", self.cards)
-        for (count, c) in self.cards.iter().enumerate() {
+        let Hand(cards) = self;
+        for (count, c) in cards.iter().enumerate() {
             if count != 0 { write!(f, " "); }
             write!(f, "{}", c);
         }
@@ -84,11 +111,38 @@ impl fmt::Display for Hand {
 
 impl Hand {
     pub fn new(cards:Vec<Card>) -> Self {
-        Hand {cards}
+        Hand (cards)
+    }
+
+    pub fn cards(&self) -> Vec<Card>{
+        let Hand(cards) = self;
+        *cards
+    }
+
+    pub fn iter(&self) -> Iter<Card> {
+        let Hand(cards) = self;
+        cards.iter()
+    }
+
+    pub fn len(&self) -> usize {
+        let Hand(cards) = self;
+        cards.len()
+    }
+
+    pub fn max(&self) -> Option<&Card> {
+        let Hand(cards) = self;
+        cards.iter().max()
+    }
+
+    // used for declaration
+    pub fn point_value(&self) -> u32 {
+        let Hand(cards) = self;
+        cards.iter().map(|&c| c.point_value()).sum()
     }
 
     pub fn sort_by_suit(&mut self) {
-        self.cards.sort_by(|a, b| {
+        let Hand(cards) = self;
+        cards.sort_by(|&a, &b| {
             if a == b {
                 Ordering::Equal
             } else if a.suit == b.suit {
@@ -100,7 +154,8 @@ impl Hand {
     }
 
     pub fn sort_by_rank(&mut self)  {
-        self.cards.sort_by(|a, b| {
+        let Hand(cards) = self;
+        cards.sort_by(|&a, &b| {
             if a == b {
                 Ordering::Equal
             } else if a.rank == b.rank {
@@ -133,7 +188,7 @@ mod tests {
         ]);
         hand.sort_by_rank();
         assert_eq!(
-            hand.cards,
+            hand,
             vec![
                 Card::new(Rank::Seven, Suit::Heart), 
                 Card::new(Rank::Seven, Suit::Diamond), 
@@ -143,7 +198,7 @@ mod tests {
         );
         hand.sort_by_suit();
         assert_eq!(
-            hand.cards,
+            hand,
             vec![
                 Card::new(Rank::Seven, Suit::Heart), 
                 Card::new(Rank::Seven, Suit::Diamond), 
