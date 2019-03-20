@@ -114,9 +114,9 @@ impl Hand {
         Hand (cards)
     }
 
-    pub fn cards(&self) -> Vec<Card>{
+    pub fn cards(self) -> Vec<Card>{
         let Hand(cards) = self;
-        *cards
+        cards
     }
 
     pub fn iter(&self) -> Iter<Card> {
@@ -137,12 +137,12 @@ impl Hand {
     // used for declaration
     pub fn point_value(&self) -> u32 {
         let Hand(cards) = self;
-        cards.iter().map(|&c| c.point_value()).sum()
+        cards.iter().map(|c| c.point_value()).sum()
     }
 
     pub fn sort_by_suit(&mut self) {
         let Hand(cards) = self;
-        cards.sort_by(|&a, &b| {
+        cards.sort_by(|a, b| {
             if a == b {
                 Ordering::Equal
             } else if a.suit == b.suit {
@@ -155,7 +155,7 @@ impl Hand {
 
     pub fn sort_by_rank(&mut self)  {
         let Hand(cards) = self;
-        cards.sort_by(|&a, &b| {
+        cards.sort_by(|a, b| {
             if a == b {
                 Ordering::Equal
             } else if a.rank == b.rank {
@@ -189,22 +189,22 @@ mod tests {
         hand.sort_by_rank();
         assert_eq!(
             hand,
-            vec![
+            Hand::new(vec![
                 Card::new(Rank::Seven, Suit::Heart), 
                 Card::new(Rank::Seven, Suit::Diamond), 
                 Card::new(Rank::Eight, Suit::Spade), 
                 Card::new(Rank::King, Suit::Diamond), 
-            ]
+            ])
         );
         hand.sort_by_suit();
         assert_eq!(
             hand,
-            vec![
+            Hand::new(vec![
                 Card::new(Rank::Seven, Suit::Heart), 
                 Card::new(Rank::Seven, Suit::Diamond), 
                 Card::new(Rank::King, Suit::Diamond), 
                 Card::new(Rank::Eight, Suit::Spade), 
-            ]
+            ])
         );
     }
 }
