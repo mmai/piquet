@@ -2,6 +2,7 @@ use std::fmt;
 use std::cmp::Ordering;
 use std::slice::Iter;
 use serde::{Serialize, Deserialize};
+use rand::{Rng};
 
 #[derive (Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum Suit {
@@ -96,6 +97,52 @@ impl Card {
 }
 
 #[derive (Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Deck(Vec<Card>);
+
+impl Deck {
+    pub fn new() -> Self {
+        Deck (vec![
+            Card::new(Rank::Seven, Suit::Diamond), 
+            Card::new(Rank::Eight, Suit::Diamond), 
+            Card::new(Rank::Nine, Suit::Diamond), 
+            Card::new(Rank::Ten, Suit::Diamond), 
+            Card::new(Rank::Jack, Suit::Diamond), 
+            Card::new(Rank::Queen, Suit::Diamond), 
+            Card::new(Rank::King, Suit::Diamond), 
+            Card::new(Rank::Ace, Suit::Diamond), 
+            Card::new(Rank::Seven, Suit::Club), 
+            Card::new(Rank::Eight, Suit::Club), 
+            Card::new(Rank::Nine, Suit::Club), 
+            Card::new(Rank::Ten, Suit::Club), 
+            Card::new(Rank::Jack, Suit::Club), 
+            Card::new(Rank::Queen, Suit::Club), 
+            Card::new(Rank::King, Suit::Club), 
+            Card::new(Rank::Ace, Suit::Club), 
+            Card::new(Rank::Seven, Suit::Heart), 
+            Card::new(Rank::Eight, Suit::Heart), 
+            Card::new(Rank::Nine, Suit::Heart), 
+            Card::new(Rank::Ten, Suit::Heart), 
+            Card::new(Rank::Jack, Suit::Heart), 
+            Card::new(Rank::Queen, Suit::Heart), 
+            Card::new(Rank::King, Suit::Heart), 
+            Card::new(Rank::Ace, Suit::Heart), 
+            Card::new(Rank::Seven, Suit::Spade), 
+            Card::new(Rank::Eight, Suit::Spade), 
+            Card::new(Rank::Nine, Suit::Spade), 
+            Card::new(Rank::Ten, Suit::Spade), 
+            Card::new(Rank::Jack, Suit::Spade), 
+            Card::new(Rank::Queen, Suit::Spade), 
+            Card::new(Rank::King, Suit::Spade), 
+            Card::new(Rank::Ace, Suit::Spade), 
+        ])
+    }
+
+    pub fn shuffle(&mut self, mut rng: Rng) {
+        rng.shuffle(&mut self.0);
+    }
+}
+
+#[derive (Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Hand(Vec<Card>);
 
 impl fmt::Display for Hand {
@@ -166,13 +213,6 @@ impl Hand {
         });
     }
 }
-
-// /// A deck of cards.
-// pub struct Deck {
-//     cards: Vec<Card>,
-// }
-
-
 
 #[cfg(test)]
 mod tests {

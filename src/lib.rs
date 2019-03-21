@@ -1,10 +1,11 @@
+use rand::{random, XorShiftRng, Rng, SeedableRng};
+
 mod cards;
 mod combinations;
 
-pub fn display() {
+pub fn run() {
     println!("PIQUET");
-    println!("{}", cards::Rank::Eight > cards::Rank::Seven);
-
+    let seed = makeRndSeed();
 
         let mut hand = cards::Hand::new(vec![ 
             cards::Card::new(cards::Rank::Seven, cards::Suit::Diamond), 
@@ -15,4 +16,10 @@ pub fn display() {
         hand.sort_by_rank();
 
         println!("{}", hand);
+}   
+
+fn makeRndSeed() -> [u32; 4]{
+    let x: u32 = random();
+    println!("random: {}", x);
+    [x, 0, 0, 0]
 }

@@ -3,8 +3,7 @@ use std::collections::HashMap;
 use std::cmp::Ordering;
 
 use serde::{Serialize, Deserialize};
-use crate::cards::Hand;
-use crate::cards::Rank;
+use crate::cards::{Hand, Card, Rank, Suit };
 
 #[derive (Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum CombinationType {
@@ -174,7 +173,7 @@ pub fn get_combinations(ctype: &CombinationType, hand: &Hand) -> Vec<Combination
     }
 }
 
-pub fn getSmallerCombinations(mcomb: Option<Combination>, combs: Vec<Combination>) -> Vec<Combination> {
+pub fn get_smaller_combinations(mcomb: Option<Combination>, combs: Vec<Combination>) -> Vec<Combination> {
     match mcomb {
         None => Vec::new(),
         Some(comb) => combs.into_iter()
@@ -183,7 +182,7 @@ pub fn getSmallerCombinations(mcomb: Option<Combination>, combs: Vec<Combination
     }
 }
 
-pub fn isCarteBlanche(hand: crate::cards::Hand) -> bool {
+pub fn is_carte_blanche(hand: Hand) -> bool {
     let heads = vec![
         crate::cards::Rank::King,
         crate::cards::Rank::Queen,
@@ -199,26 +198,43 @@ mod tests {
     #[test]
     fn test_get_combinations() {
         let hand = Hand::new(vec![ 
-            crate::cards::Card::new(Rank::Seven, crate::cards::Suit::Diamond), 
-            crate::cards::Card::new(Rank::King, crate::cards::Suit::Diamond), 
-            crate::cards::Card::new(Rank::King, crate::cards::Suit::Heart), 
-            crate::cards::Card::new(Rank::King, crate::cards::Suit::Spade), 
-            crate::cards::Card::new(Rank::Seven, crate::cards::Suit::Heart), 
-            crate::cards::Card::new(Rank::Eight, crate::cards::Suit::Spade), 
-            crate::cards::Card::new(Rank::Nine, crate::cards::Suit::Spade), 
-            crate::cards::Card::new(Rank::Ten, crate::cards::Suit::Spade), 
-            crate::cards::Card::new(Rank::Jack, crate::cards::Suit::Spade), 
+            Card::new(Rank::Seven, Suit::Diamond), 
+            Card::new(Rank::King, Suit::Diamond), 
+            Card::new(Rank::King, Suit::Heart), 
+            Card::new(Rank::King, Suit::Spade), 
+            Card::new(Rank::Seven, Suit::Heart), 
+            Card::new(Rank::Eight, Suit::Spade), 
+            Card::new(Rank::Nine, Suit::Spade), 
+            Card::new(Rank::Ten, Suit::Spade), 
+            Card::new(Rank::Jack, Suit::Spade), 
         ]);
         let ctype = CombinationType::Set;
         let combs_set = get_combinations(&ctype, &hand);
         let mut expected_hand = Hand::new(
                 vec![
-                    crate::cards::Card::new(Rank::King, crate::cards::Suit::Diamond), 
-                    crate::cards::Card::new(Rank::King, crate::cards::Suit::Heart), 
-                    crate::cards::Card::new(Rank::King, crate::cards::Suit::Spade), 
+                    Card::new(Rank::King, Suit::Diamond), 
+                    Card::new(Rank::King, Suit::Heart), 
+                    Card::new(Rank::King, Suit::Spade), 
                 ]
             );
         expected_hand.sort_by_suit();
+        assert_eq!(
+            combs_set,
+            vec![
+            Combination::new(ctype.clone(), expected_hand)
+            ]
+        );
+
+        let ctype = CombinationType::Sequence;
+        let combs_set = get_combinations(&ctype, &hand);
+        let expected_hand = Hand::new(
+                vec![
+                Card::new(Rank::Eight, Suit::Spade), 
+                Card::new(Rank::Nine, Suit::Spade), 
+                Card::new(Rank::Ten, Suit::Spade), 
+                Card::new(Rank::Jack, Suit::Spade), 
+                ]
+            );
         assert_eq!(
             combs_set,
             vec![
@@ -230,25 +246,25 @@ mod tests {
     #[test]
     fn test_carteblanche() {
         let hand = Hand::new(vec![ 
-            crate::cards::Card::new(Rank::Seven, crate::cards::Suit::Diamond), 
-            crate::cards::Card::new(Rank::King, crate::cards::Suit::Diamond), 
-            crate::cards::Card::new(Rank::King, crate::cards::Suit::Heart), 
-            crate::cards::Card::new(Rank::King, crate::cards::Suit::Spade), 
-            crate::cards::Card::new(Rank::Seven, crate::cards::Suit::Heart), 
-            crate::cards::Card::new(Rank::Eight, crate::cards::Suit::Spade), 
-            crate::cards::Card::new(Rank::Nine, crate::cards::Suit::Spade), 
-            crate::cards::Card::new(Rank::Ten, crate::cards::Suit::Spade), 
-            crate::cards::Card::new(Rank::Jack, crate::cards::Suit::Spade), 
+            Card::new(Rank::Seven, Suit::Diamond), 
+            Card::new(Rank::King, Suit::Diamond), 
+            Card::new(Rank::King, Suit::Heart), 
+            Card::new(Rank::King, Suit::Spade), 
+            Card::new(Rank::Seven, Suit::Heart), 
+            Card::new(Rank::Eight, Suit::Spade), 
+            Card::new(Rank::Nine, Suit::Spade), 
+            Card::new(Rank::Ten, Suit::Spade), 
+            Card::new(Rank::Jack, Suit::Spade), 
         ]);
-        assert!(!isCarteBlanche(hand));
+        assert!(!is_carte_blanche(hand));
         let hand = Hand::new(vec![ 
-            crate::cards::Card::new(Rank::Seven, crate::cards::Suit::Diamond), 
-            crate::cards::Card::new(Rank::Seven, crate::cards::Suit::Heart), 
-            crate::cards::Card::new(Rank::Eight, crate::cards::Suit::Spade), 
-            crate::cards::Card::new(Rank::Nine, crate::cards::Suit::Spade), 
-            crate::cards::Card::new(Rank::Ten, crate::cards::Suit::Spade), 
+            Card::new(Rank::Seven, Suit::Diamond), 
+            Card::new(Rank::Seven, Suit::Heart), 
+            Card::new(Rank::Eight, Suit::Spade), 
+            Card::new(Rank::Nine, Suit::Spade), 
+            Card::new(Rank::Ten, Suit::Spade), 
         ]);
-        assert!(isCarteBlanche(hand));
+        assert!(is_carte_blanche(hand));
     }
 }
 
