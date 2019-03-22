@@ -1,6 +1,8 @@
 use crate::cards::*;
 use std::fmt;
 use serde::{Serialize, Deserialize};
+use rand_core::SeedableRng;
+use rand::Rng;
 
 use crate::combinations::*;
 
@@ -28,6 +30,34 @@ enum Step { Start
           , PlayCards
           , PlayEnd
           , End
+}
+
+impl Step {
+    pub fn succ(&self) -> Option<Self> {
+        use Step::*;
+        match self {                 
+            Start                    => Some(Deal)
+          , Deal                     => Some(ExchangeElder)
+          , ExchangeElder            => Some(ExchangeYounger)
+          , ExchangeYounger          => Some(DeclarePointElder)
+          , DeclarePointElder        => Some(DeclarePointResponse)
+          , DeclarePointResponse     => Some(SetPointsPointElder)
+          , SetPointsPointElder      => Some(DeclareSequenceElder)
+          , DeclareSequenceElder     => Some(DeclareSequenceResponse)
+          , DeclareSequenceResponse  => Some(SetPointsSequenceElder)
+          , SetPointsSequenceElder   => Some(DeclareSetElder)
+          , DeclareSetElder          => Some(DeclareSetResponse)
+          , DeclareSetResponse       => Some(SetPointsSetElder)
+          , SetPointsSetElder        => Some(PlayFirstCard)
+          , PlayFirstCard            => Some(SetPointsPointYounger)
+          , SetPointsPointYounger    => Some(SetPointsSequenceYounger)
+          , SetPointsSequenceYounger => Some(SetPointsSetYounger)
+          , SetPointsSetYounger      => Some(PlayCards)
+          , PlayCards                => Some(PlayEnd)
+          , PlayEnd                  => Some(End)
+          , End                      => None
+        }
+    }
 }
 
 #[derive (Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -132,8 +162,8 @@ impl fmt::Display for Player {
 enum DeclarationWinner { Elder, Younger, Tie, Nobody }
 
 #[derive (Debug)]
-pub struct Game { 
-          dealNum             : Deal
+pub struct Game { rng: rand_xorshift::XorShiftRng
+        , dealNum             : Deal
         , dealMoves           : Vec<(Move, u32)>
         , deals               : Vec<(Deal, Vec<(Move, u32)>)>
         , deck                : Deck
@@ -153,10 +183,12 @@ pub struct Game {
 }
 
 impl Game {
-    pub fn new(rng: rand_xorshift::XorShiftRng ) -> Self {
+    pub fn new(seed:[u8; 16]) -> Self {
         let mut deck = Deck::new();
-        deck.shuffle(rng);
-        Game { dealNum: Deal::One
+        let mut rng = rand_xorshift::XorShiftRng::from_seed(seed);
+        deck.shuffle(&mut rng);
+        Game { rng
+            , dealNum: Deal::One
             , dealMoves: vec![]
             , deals: vec![]
             , deck
@@ -174,6 +206,29 @@ impl Game {
             , setWinner: DeclarationWinner::Nobody
             , setCombination: None
         }
+    }
+
+    pub fn choose_elder(&mut self){
+        self.player1.isElder = self.rng.gen();
+        self.player2.isElder = !self.player1.isElder;
+    }
+
+    pub fn deal<'hands>(&mut self){
+        // let hands = self.deck.draw_hands(12, 2);
+        let hands = vec![Hand::new(vec![]), Hand::new(vec![])];
+        self.player1.hand = hands[0];
+        self.player1.leftUntilCarteRouge = self.player1.hand.clone();
+        self.player1.pointCandidate = None;
+        self.player1.sequenceCandidate = None;
+        self.player1.setCandidate = None;
+
+        self.player2.hand = hands[1];
+        self.player2.leftUntilCarteRouge = self.player2.hand.clone();
+        self.player2.pointCandidate = None;
+        self.player2.sequenceCandidate = None;
+        self.player2.setCandidate = None;
+        self.dealMoves = vec![];
+        self.step = Step::Deal.succ().expect("No more step");
     }
 }
 

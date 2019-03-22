@@ -149,8 +149,21 @@ impl Deck {
         cards
     }
 
-    pub fn shuffle<RNG:Rng>(&mut self, mut rng: RNG) {
+    pub fn shuffle<RNG:Rng>(&mut self, rng: &mut RNG) {
         rng.shuffle(&mut self.0);
+    }
+
+    pub fn take_n_cards(&mut self, ncards: usize) -> Vec<Card>{
+        let Deck(cards) = self;
+        cards.split_off(ncards)
+    }
+
+    pub fn draw_hands(&mut self,ncards: usize,nhands: usize) -> Vec<Hand>{
+        let mut hands = vec![];
+        for i in 0..nhands {
+            hands.push(Hand::new(self.take_n_cards(ncards)));
+        }
+        hands
     }
 }
 
