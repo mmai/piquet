@@ -7,5 +7,7 @@ edition = "2018"
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 actix-web = "0.7"
-rand = "*"
+rand = "*" # for random() function
+rand_core = "*" # for SeadableRng trait
+rand_xorshift = "*" # rand algorithm used by suffle
 itertools = "*"

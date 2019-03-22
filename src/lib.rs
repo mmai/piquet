@@ -1,25 +1,17 @@
-use rand::{random, XorShiftRng, Rng, SeedableRng};
+use rand_core::SeedableRng;
 
 mod cards;
 mod combinations;
+mod game;
 
 pub fn run() {
     println!("PIQUET");
-    let seed = makeRndSeed();
-
-        let mut hand = cards::Hand::new(vec![ 
-            cards::Card::new(cards::Rank::Seven, cards::Suit::Diamond), 
-            cards::Card::new(cards::Rank::Eight, cards::Suit::Diamond), 
-            cards::Card::new(cards::Rank::Seven, cards::Suit::Heart), 
-            cards::Card::new(cards::Rank::King, cards::Suit::Spade), 
-        ]);
-        hand.sort_by_rank();
-
-        println!("{}", hand);
+    let (seed, rng) = make_rng();
+    let mut game = game::Game::new(rng);
+    println!("Game for seed {:?}: {:?}", seed, game);
 }   
 
-fn makeRndSeed() -> [u32; 4]{
-    let x: u32 = random();
-    println!("random: {}", x);
-    [x, 0, 0, 0]
+fn make_rng() -> ([u8; 16], rand_xorshift::XorShiftRng) {
+    let intseeds: [u8; 16] = rand::random();
+    ( intseeds, rand_xorshift::XorShiftRng::from_seed(intseeds))
 }

@@ -4,6 +4,7 @@ use std::slice::Iter;
 use serde::{Serialize, Deserialize};
 use rand::{Rng};
 
+// -----------  Suit -----------
 #[derive (Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum Suit {
     Heart,
@@ -23,6 +24,19 @@ impl fmt::Display for Suit {
     }
 }
 
+impl Suit {
+   pub fn iter() -> Iter<'static, Suit> {
+        static SUITS: [Suit;  4] = [
+            Suit::Heart,
+            Suit::Diamond, 
+            Suit::Spade,
+            Suit::Club
+        ];
+        SUITS.into_iter()
+    }
+}
+
+// -----------  Rank -----------
 #[derive (Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum Rank {
     Seven,
@@ -46,16 +60,30 @@ impl Rank {
        }
     }
 
+   pub fn iter() -> Iter<'static, Rank> {
+        static RANKS: [Rank;  8] = [
+            Rank::Seven,
+            Rank::Eight,
+            Rank::Nine,
+            Rank::Ten,
+            Rank::Jack,  
+            Rank::Queen, 
+            Rank::King,
+            Rank::Ace,
+        ];
+        RANKS.into_iter()
+    }
+
     pub fn succ(&self) -> Option<Self> {
         match self {
             Rank::Seven => Some(Rank::Eight),
             Rank::Eight => Some(Rank::Nine),
-            Rank::Nine => Some(Rank::Ten),
-            Rank::Ten => Some(Rank::Jack),
-            Rank::Jack => Some(Rank::Queen),
+            Rank::Nine  => Some(Rank::Ten),
+            Rank::Ten   => Some(Rank::Jack),
+            Rank::Jack  => Some(Rank::Queen),
             Rank::Queen => Some(Rank::King),
-            Rank::King => Some(Rank::Ace),
-            Rank::Ace => None
+            Rank::King  => Some(Rank::Ace),
+            Rank::Ace   => None
         }
     }
 }
@@ -75,6 +103,7 @@ impl fmt::Display for Rank {
     }
 }
 
+// -----------  Card -----------
 #[derive (Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct Card { 
     pub rank: Rank,
@@ -96,52 +125,36 @@ impl Card {
     }
 }
 
+// -----------  Deck -----------
 #[derive (Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Deck(Vec<Card>);
 
 impl Deck {
-    pub fn new() -> Self {
-        Deck (vec![
-            Card::new(Rank::Seven, Suit::Diamond), 
-            Card::new(Rank::Eight, Suit::Diamond), 
-            Card::new(Rank::Nine, Suit::Diamond), 
-            Card::new(Rank::Ten, Suit::Diamond), 
-            Card::new(Rank::Jack, Suit::Diamond), 
-            Card::new(Rank::Queen, Suit::Diamond), 
-            Card::new(Rank::King, Suit::Diamond), 
-            Card::new(Rank::Ace, Suit::Diamond), 
-            Card::new(Rank::Seven, Suit::Club), 
-            Card::new(Rank::Eight, Suit::Club), 
-            Card::new(Rank::Nine, Suit::Club), 
-            Card::new(Rank::Ten, Suit::Club), 
-            Card::new(Rank::Jack, Suit::Club), 
-            Card::new(Rank::Queen, Suit::Club), 
-            Card::new(Rank::King, Suit::Club), 
-            Card::new(Rank::Ace, Suit::Club), 
-            Card::new(Rank::Seven, Suit::Heart), 
-            Card::new(Rank::Eight, Suit::Heart), 
-            Card::new(Rank::Nine, Suit::Heart), 
-            Card::new(Rank::Ten, Suit::Heart), 
-            Card::new(Rank::Jack, Suit::Heart), 
-            Card::new(Rank::Queen, Suit::Heart), 
-            Card::new(Rank::King, Suit::Heart), 
-            Card::new(Rank::Ace, Suit::Heart), 
-            Card::new(Rank::Seven, Suit::Spade), 
-            Card::new(Rank::Eight, Suit::Spade), 
-            Card::new(Rank::Nine, Suit::Spade), 
-            Card::new(Rank::Ten, Suit::Spade), 
-            Card::new(Rank::Jack, Suit::Spade), 
-            Card::new(Rank::Queen, Suit::Spade), 
-            Card::new(Rank::King, Suit::Spade), 
-            Card::new(Rank::Ace, Suit::Spade), 
-        ])
+    pub fn empty_deck() -> Self {
+        Deck (vec![])
     }
 
-    pub fn shuffle(&mut self, mut rng: Rng) {
+    pub fn new() -> Self {
+        let mut dcards: Vec<Card> = Vec::new();
+        for r in Rank::iter(){
+            for s in Suit::iter(){
+                dcards.push(Card::new(r.clone(), s.clone()));
+            }
+        }
+        Deck(dcards)
+    }
+
+    pub fn get_cards(&self) -> &Vec<Card>{
+        let Deck(cards) = self;
+        cards
+    }
+
+    pub fn shuffle<RNG:Rng>(&mut self, mut rng: RNG) {
         rng.shuffle(&mut self.0);
     }
 }
 
+// -----------  Hand -----------
 #[derive (Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Hand(Vec<Card>);
 
@@ -157,6 +170,10 @@ impl fmt::Display for Hand {
 }
 
 impl Hand {
+    pub fn empty_hand() -> Self {
+        Hand (vec![])
+    }
+
     pub fn new(cards:Vec<Card>) -> Self {
         Hand (cards)
     }
@@ -219,6 +236,12 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_deck() {
+        let Deck(cards) = Deck::new();
+        assert_eq!(cards.len(), 32);
+    }
+
+    #[test]
     fn test_sort_hand() {
         let mut hand = Hand::new(vec![ 
             Card::new(Rank::Seven, Suit::Diamond), 
@@ -261,11 +284,3 @@ mod tests {
 // instance (Ord a, FromJSON a) => FromJSON (OSet a) where
 //     parseJSON = fmap fromList . parseJSON
 //
-// type Deck = OSet Card
-// type Hand = OSet Card
-//
-// sortedDeck :: Deck
-// sortedDeck = fromList [Card rank suit | rank <- [Seven .. Ace],  suit <- [Clubs .. Spades]]
-//
-// noCards :: OSet Card
-// noCards = fromList []
